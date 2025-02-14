@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Valentine's Game</title>
+    <style>
+        body {
+            text-align: center;
+            font-family: Arial, sans-serif;
+            background-color: #ffe6f2;
+            overflow: hidden;
+        }
+        h1 {
+            color: #d63384;
+        }
+        .game-container {
+            display: block;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .box {
+            width: 100px;
+            height: 100px;
+            background-color: #ff99cc;
+            border: 2px solid #d63384;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            border-radius: 10px;
+            user-select: none;
+        }
+        .hidden {
+            background-color: #ff99cc;
+            color: transparent;
+        }
+        .scramble {
+            animation: scramble 0.5s ease-in-out;
+        }
+        @keyframes scramble {
+            0% { transform: rotate(0deg); }
+            50% { transform: rotate(10deg); }
+            100% { transform: rotate(0deg); }
+        }
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            text-align: center;
+        }
+        .popup p {
+            font-size: 18px;
+            color: #d63384;
+            font-weight: bold;
+        }
+        .popup button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background-color: #d63384;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Happy Valentine's Day, Anju! ❤️</h1>
+        <div class="game-container" id="level1">
+        <p>Find the matching hearts!</p>
+        <div class="grid" id="grid"></div>
+    </div>
+
+    <!-- Hidden Pop-up -->
+    <div class="popup" id="popup">
+        <p>"You're the reason my heart beats faster! ❤️"</p>
+        <a href="level3.html">
+		<button onclick="nextLevel()">Next Level</button>
+		</a>
+    </div>
+    
+    <script>
+        let matchedPairs = 0;
+        let allMatched = false;
+        let lastBox = null;
+
+        function nextLevel() {
+           document.getElementById("popup").style.display = "block";
+triggerConfetti();
+        }
+
+        function createMemoryGame() {
+            let grid = document.getElementById("grid");
+            let hearts = ['❤️', '💖', '💕', '💗'];
+            let pairs = hearts.concat(hearts);
+            pairs.push("🎁"); // Special last box
+            pairs.sort(() => Math.random() - 0.5);
+            grid.innerHTML = "";
+            let selected = [];
+
+            pairs.forEach((symbol, index) => {
+                let box = document.createElement("div");
+                box.classList.add("box", "hidden", "scramble");
+                box.dataset.symbol = symbol;
+
+                // Store reference to last special box
+                if (symbol === "🎁") {
+                    lastBox = box;
+                }
+
+                box.addEventListener("click", () => {
+                    if (box === lastBox && allMatched) {
+                        document.getElementById("popup").style.display = "block";
+                        return;
+                    }
+                    
+                    if (selected.length < 2 && !box.classList.contains("matched")) {
+                        box.classList.remove("hidden");
+                        box.textContent = box.dataset.symbol;
+                        selected.push(box);
+                    }
+
+                    if (selected.length === 2) {
+                        setTimeout(() => {
+                            if (selected[0].dataset.symbol === selected[1].dataset.symbol) {
+                                selected.forEach(el => el.classList.add("matched"));
+                                matchedPairs++;
+                                if (matchedPairs === hearts.length) {
+                                    allMatched = true;
+                                }
+                            } else {
+                                selected.forEach(el => {
+                                    el.classList.add("hidden");
+                                    el.textContent = "";
+                                });
+                            }
+                            selected = [];
+                        }, 500);
+                    }
+                });
+                grid.appendChild(box);
+            });
+        }
+
+        createMemoryGame();
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+<script>
+    function triggerConfetti() {
+        confetti({
+            particleCount: 100,
+            spread: 70,
+            origin: { y: 0.6 }
+        });
+    }
+</script>
+</body>
+</html>
