@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heart Catching Game</title>
+    <style>
+        body {
+            text-align: center;
+            font-family: Arial, sans-serif;
+            background-color: #ffe6f2;
+            overflow: hidden;
+        }
+        .game-container {
+            display: none;
+        }
+        .basket-container {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            overflow: hidden;
+            background-color: #fff0f5;
+        }
+        .basket {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+        }
+        .heart {
+            position: absolute;
+            top: 0;
+            font-size: 30px;
+            animation: fall linear infinite;
+        }
+
+        @keyframes fall {
+            from {
+                top: 0;
+            }
+            to {
+                top: 100vh;
+            }
+        }
+
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
+        }
+        .next-level, .restart-button {
+            padding: 10px 20px;
+            background-color: #d63384;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            margin-top: 10px;
+        }
+		button {
+    padding: 12px 25px;
+    background-color: #ff1493; /* Bright Pink */
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 20px;
+    font-weight: bold;
+    border-radius: 8px;
+    transition: 0.3s ease-in-out;
+}
+
+button:hover {
+    background-color: #d63384; /* Darker pink */
+    transform: scale(1.1);
+}
+
+    </style>
+</head>
+<body>
+
+   <h1>Happy Valentine's Day, Anju! ❤️</h1>
+    <p>From the moment we began this journey in 2017, my heart has been filled with love, laughter, and countless beautiful memories with you. Every day with you is special, but today is a little extra magical.
+This game is a small way to celebrate our love—a journey filled with surprises, challenges, and, most importantly, hearts meant just for you. 💕
+So, let’s play, smile, and cherish the love that has grown stronger with time. You will always be the most special piece of my heart.
+Let’s begin our love-filled adventure! 🎮❤️</p>
+	<h2>Catch My Heart</h2>
+    <button onclick="startGame()">Start Game</button>
+
+    <div class="game-container">
+        <p id="score">Score: 0</p>
+        <p id="timer">Time Left: 15s</p>
+
+        <div class="basket-container">
+            <img src="https://static.vecteezy.com/system/resources/thumbnails/042/567/695/small_2x/ai-generated-basket-on-isolated-transparent-background-png.png" id="basket" class="basket" alt="Basket">
+        </div>
+    </div>
+
+    <!-- Popup for Game Messages -->
+    <div id="popup" class="popup">
+        <p id="popup-message"></p>
+		<center>
+        <button class="restart-button" onclick="restartGame()">Restart</button>
+		</center>
+		<center>
+        <a href="level2.html">
+		<button class="next-level" id="final-level-button" onclick="nextLevel()" style="display: none;">Final Level</button>
+		</a>
+		</center>
+    </div>
+
+    <script>
+        let basket = document.getElementById("basket");
+        let gameContainer = document.querySelector(".game-container");
+        let score = 0;
+        let timeLeft = 15;
+        let gameInterval, timerInterval;
+        const hearts = ['❤️', '💖', '💕', '💗', '💞', '🖤'];
+
+        document.addEventListener("mousemove", (e) => {
+            basket.style.left = e.clientX - 50 + "px";
+        });
+
+        document.addEventListener("touchmove", (e) => {
+            let touch = e.touches[0];
+            basket.style.left = touch.clientX - 50 + "px";
+        });
+
+        function startGame() {
+            document.querySelector("button").style.display = "none";
+            gameContainer.style.display = "block";
+            document.getElementById("score").textContent = "Score: 0";
+            document.getElementById("timer").textContent = "Time Left: 15s";
+            document.getElementById("popup").style.display = "none";
+            score = 0;
+            timeLeft = 15;
+
+            gameInterval = setInterval(spawnHeart, 1000);
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById("timer").textContent = "Time Left: " + timeLeft + "s";
+                if (timeLeft === 0) {
+                    clearInterval(gameInterval);
+                    clearInterval(timerInterval);
+                    if (score >= 5) {
+                        showPopup("Great Job! You caught enough hearts!", false, true);
+                    } else {
+                        showPopup("Time's Up! Try Again!", true, false);
+                    }
+                }
+            }, 1000);
+        }
+
+        function spawnHeart() {
+            let heart = document.createElement("div");
+            heart.classList.add("heart");
+            heart.textContent = hearts[Math.floor(Math.random() * hearts.length)];
+            heart.style.left = Math.random() * 90 + "%";
+            heart.style.animationDuration = Math.random() * 3 + 2 + "s";
+            document.querySelector(".basket-container").appendChild(heart);
+
+            let heartFall = setInterval(() => {
+                let heartRect = heart.getBoundingClientRect();
+                let basketRect = basket.getBoundingClientRect();
+
+                if (
+                    heartRect.bottom >= basketRect.top &&
+                    heartRect.left >= basketRect.left &&
+                    heartRect.right <= basketRect.right
+                ) {
+                    heart.remove();
+                    clearInterval(heartFall);
+                    if (heart.textContent === '🖤') {
+                        clearInterval(gameInterval);
+                        clearInterval(timerInterval);
+                        showPopup("Oh no! You caught a black heart! Game Over!", true, false);
+                    } else {
+                        score++;
+                        document.getElementById("score").textContent = "Score: " + score;
+                    }
+                }
+
+                if (heartRect.top > window.innerHeight) {
+                    heart.remove();
+                    clearInterval(heartFall);
+                }
+            }, 50);
+        }
+
+        function showPopup(message, showRestart = false, showFinalLevel = false) {
+            let popupMessage = document.getElementById("popup-message");
+            let popup = document.getElementById("popup");
+            let restartButton = document.querySelector(".restart-button");
+            let finalLevelButton = document.getElementById("final-level-button");
+
+            popupMessage.textContent = message;
+            popup.style.display = "block";
+
+            restartButton.style.display = showRestart ? "block" : "none";
+            finalLevelButton.style.display = showFinalLevel ? "block" : "none";
+        }
+
+        function restartGame() {
+            document.getElementById("popup").style.display = "none";
+            startGame();
+        }
+
+        function nextLevel() {
+            document.getElementById("popup").style.display = "none";
+            
+        }
+    </script>
+
+</body>
+</html>
